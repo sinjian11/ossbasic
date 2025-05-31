@@ -2,14 +2,77 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>시각장애인 택시 도우미</title>
-  <link rel="stylesheet" href="style.css">
+  <title>시각장애인 택시 호출 앱</title>
+  <style>
+    body { font-size: 1.2rem; padding: 2rem; background: #111; color: #fff; }
+    button { font-size: 1.2rem; padding: 1rem; margin: 1rem 0; }
+  </style>
 </head>
 <body>
-  <h1>🚕 택시 도우미</h1>
-  <button id="callTaxiBtn">택시 호출</button>
-  <p id="locationStatus">위치를 가져오는 중...</p>
-  <script src="app.js"></script>
+  <h1>🚕 택시 호출</h1>
+  <p id="status">음성으로 출발지와 목적지를 말씀해주세요.</p>
+  <button onclick="startListening()">🎤 말하기 시작</button>
+  <button onclick="getLocation()">📍 내 위치 확인</button>
+
+  <script>
+    // 음성 인식 설정
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+
+    let departure = '';
+    let destination = '';
+
+    recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      speak(`입력하신 내용: ${transcript}`);
+      document.getElementById("status").innerText = `입력: ${transcript}`;
+
+      // 간단한 키워드 기반 분석 (더 정교화 필요)
+      if (!departure) {
+        departure = transcript;
+        speak("목적지를 말씀해주세요.");
+      } else {
+        destination = transcript;
+        speak(`출발지: ${departure}, 목적지: ${destination}로 택시를 호출합니다.`);
+        // 여기서 실제 호출 API 연동 가능
+      }
+    };
+
+    recognition.onerror = function() {
+      speak("음성 인식에 실패했습니다. 다시 시도해주세요.");
+    };
+
+    function startListening() {
+      speak("출발지를 말씀해주세요.");
+      recognition.start();
+    }
+
+    // 음성 안내 함수
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = 'ko-KR';
+      window.speechSynthesis.speak(msg);
+    }
+
+    // GPS 위치 받아오기
+    function getLocation() {
+      if (!navigator.geolocation) {
+        speak("위치 정보를 지원하지 않는 브라우저입니다.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          speak(`현재 위치는 위도 ${lat}, 경도 ${lon}입니다.`);
+          document.getElementById("status").innerText = `위치: ${lat}, ${lon}`;
+        },
+        error => {
+          speak("위치 정보를 가져올 수 없습니다.");
+        }
+      );
+    }
+  </script>
 </body>
 </html>
-햣햣
