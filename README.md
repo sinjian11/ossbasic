@@ -1,50 +1,21 @@
-# Welcome to your Expo app 👋
+✅ 핵심 기능
+음성 명령으로 택시 호출 (Voice API 활용)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+현재 위치 자동 감지 (Geolocation API)
 
-## Get started
+접근성 강화 UI (스크린 리더 호환, 큰 버튼 등)
 
-1. Install dependencies
+운전기사와의 간단한 음성 또는 자동 메시지 전송
 
-   ```bash
-   npm install
-   ```
+음성 안내로 택시 도착 알림
 
-2. Start the app
+긴급 호출 버튼 (SOS)
 
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+🧩 기술 구성 요소
+기능	기술 도구
+위치 추적	navigator.geolocation (JavaScript 내장 API)
+음성 인식	Web Speech API (SpeechRecognition)
+음성 출력	Web Speech API (SpeechSynthesis)
+택시 API 연동	Kakao Mobility API, T-map API, 또는 우버 API 등 외부 호출 API
+접근성 향상	WAI-ARIA 속성, <button> 사용, 스크린 리더 최적화
+UI 프레임워크	React.js (컴포넌트 구조), 또는 간단한 HTML/CSS + Vanilla JS
