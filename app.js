@@ -31,3 +31,28 @@ const App = () => {
     return true;
   };
 
+    const callTaxi = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      setStatus('위치 권한이 필요합니다.');
+      Tts.speak('위치 권한이 필요합니다.');
+      return;
+    }
+
+    setStatus('위치 확인 중...');
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ latitude, longitude });
+        setStatus('택시 호출 완료. 도착 중입니다.');
+        Tts.speak('택시를 호출했습니다. 곧 도착합니다.');
+        simulateTaxiArrival(latitude, longitude);
+      },
+      error => {
+        setStatus('위치를 가져올 수 없습니다.');
+        Tts.speak('위치를 가져올 수 없습니다.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    );
+  };
+
