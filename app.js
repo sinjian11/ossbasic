@@ -92,4 +92,12 @@ const App = () => {
     return R * c;
   };
 
+   return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.text}>상태: {status}</Text>
+      <Button title="택시 호출" onPress={callTaxi} />
+    </SafeAreaView>
+  );
+};
+
 
