@@ -56,3 +56,24 @@ const App = () => {
     );
   };
 
+  const simulateTaxiArrival = (userLat, userLng) => {
+    let taxiLat = userLat + 0.0005;
+    let taxiLng = userLng + 0.0005;
+
+    const interval = setInterval(() => {
+      const distance = getDistance(userLat, userLng, taxiLat, taxiLng);
+      setStatus(`택시까지 거리: ${distance.toFixed(1)}m`);
+      Tts.speak(`택시까지 ${distance.toFixed(0)}미터 남았습니다.`);
+
+      if (distance < 5) {
+        clearInterval(interval);
+        setStatus('택시가 도착했습니다.');
+        Tts.speak('택시가 도착했습니다. 안전하게 탑승하세요.');
+      } else {
+        taxiLat -= 0.0001;
+        taxiLng -= 0.0001;
+      }
+    }, 5000);
+  };
+
+
