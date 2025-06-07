@@ -37,4 +37,10 @@ function getDistance(lat1, lng1, lat2, lng2) {
   return R * c;
 }
 
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ko-KR';
+  speechSynthesis.speak(utterance);
+}
+
 
