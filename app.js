@@ -1,60 +1,110 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, Alert, Vibration } from 'react-native';
-import * as Location from 'expo-location';
-import * as Speech from 'expo-speech';
-import Haptic from 'react-native-haptic-feedback';
+import React, { useEffect, useState } from 'react';
+import {
+  SafeAreaView,
+  Button,
+  Text,
+  StyleSheet,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+import Tts from 'react-native-tts';
 
-export default function App() {
-  const speak = (text) => {
-    Speech.speak(text);
+const App = () => {
+  const [location, setLocation] = useState(null);
+  const [status, setStatus] = useState('대기 중');
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: '위치 권한 요청',
+          message: '택시 호출을 위해 위치 권한이 필요합니다.',
+          buttonNeutral: '나중에',
+          buttonNegative: '거부',
+          buttonPositive: '허용',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    return true;
   };
 
-  const getLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      speak("위치 권한이 필요합니다.");
+    const callTaxi = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      setStatus('위치 권한이 필요합니다.');
+      Tts.speak('위치 권한이 필요합니다.');
       return;
     }
 
-    let location = await Location.getCurrentPositionAsync({});
-    const coords = location.coords;
-    const message = `현재 위치는 위도 ${coords.latitude}, 경도 ${coords.longitude}입니다. 택시를 부를까요?`;
-
-    speak(message);
-    Vibration.vibrate(500);
-    Alert.alert("위치 정보", message, [
-      { text: "택시 호출", onPress: () => callTaxi(coords) },
-      { text: "취소", style: "cancel" },
-    ]);
+    setStatus('위치 확인 중...');
+    Geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ latitude, longitude });
+        setStatus('택시 호출 완료. 도착 중입니다.');
+        Tts.speak('택시를 호출했습니다. 곧 도착합니다.');
+        simulateTaxiArrival(latitude, longitude);
+      },
+      error => {
+        setStatus('위치를 가져올 수 없습니다.');
+        Tts.speak('위치를 가져올 수 없습니다.');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    );
   };
 
-  const callTaxi = (coords) => {
-    speak("택시를 호출했습니다.");
-    Haptic.trigger("notificationSuccess");
+  const simulateTaxiArrival = (userLat, userLng) => {
+    let taxiLat = userLat + 0.0005;
+    let taxiLng = userLng + 0.0005;
+
+    const interval = setInterval(() => {
+      const distance = getDistance(userLat, userLng, taxiLat, taxiLng);
+      setStatus(`택시까지 거리: ${distance.toFixed(1)}m`);
+      Tts.speak(`택시까지 ${distance.toFixed(0)}미터 남았습니다.`);
+
+      if (distance < 5) {
+        clearInterval(interval);
+        setStatus('택시가 도착했습니다.');
+        Tts.speak('택시가 도착했습니다. 안전하게 탑승하세요.');
+      } else {
+        taxiLat -= 0.0001;
+        taxiLng -= 0.0001;
+      }
+    }, 5000);
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🚖 시각장애인 택시 도우미</Text>
-      <Button
-        title="현재 위치로 택시 호출"
-        onPress={getLocation}
-        color="#000"
-      />
-    </View>
+  const getDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 6371e3; // meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) *
+      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
+   return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.text}>상태: {status}</Text>
+      <Button title="택시 호출" onPress={callTaxi} />
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 40,
-    textAlign: 'center',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  text: { fontSize: 20, marginBottom: 20 },
 });
+
+export default App;
+
+
